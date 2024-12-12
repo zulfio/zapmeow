@@ -119,6 +119,7 @@ type WhatsApp interface {
 	GetContactInfo(instance *Instance, jid JID) (*ContactInfo, error)
 	ParseEventMessage(instance *Instance, message *events.Message) (Message, error)
 	IsOnWhatsApp(instance *Instance, phones []string) ([]IsOnWhatsAppResponse, error)
+	SendVideoMessage(instance *Instance, jid JID, videoURL *dataurl.DataURL, mimetype string) (MessageResponse, error)
 }
 
 type whatsApp struct {
@@ -521,4 +522,34 @@ func (w *whatsApp) generateQrcode(instance *Instance, qrcodeHandler func(evt str
 			}
 		}
 	}
+}
+
+func (w *whatsApp) SendVideoMessage(instance *Instance, jid types.JID, videoURL *dataurl.DataURL, mimetype string) (MessageResponse, error) {
+    uploaded, err := instance.Client.Upload(context.Background(), videoURL.Data, whatsmeow.MediaVideo)
+    if err != nil {
+        return MessageResponse{}, err
+    }
+
+    msg := &waProto.Message{
+        VideoMessage: &waProto.VideoMessage{
+            URL:           proto.String(uploaded.URL),
+            DirectPath:    proto.String(uploaded.DirectPath),
+            MediaKey:      uploaded.MediaKey,
+            FileEncSHA256: uploaded.FileEncSHA256,
+            FileSHA256:    uploaded.FileSHA256,
+            FileLength:    proto.Uint64(uploaded.FileLength),
+            Mimetype:      proto.String(mimetype),
+        },
+    }
+
+    resp, err := instance.Client.SendMessage(context.Background(), jid, msg)
+    if err != nil {
+        return MessageResponse{}, err
+    }
+
+    return MessageResponse{
+        ID:        resp.ID,
+        Timestamp: resp.Timestamp,
+        Sender:    *instance.Client.Store.ID,
+    }, nil
 }

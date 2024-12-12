@@ -34,6 +34,7 @@ type WhatsAppService interface {
 	GetContactInfo(instance *whatsapp.Instance, jid whatsapp.JID) (*whatsapp.ContactInfo, error)
 	ParseEventMessage(instance *whatsapp.Instance, message *events.Message) (whatsapp.Message, error)
 	IsOnWhatsApp(instance *whatsapp.Instance, phones []string) ([]whatsapp.IsOnWhatsAppResponse, error)
+	SendVideoMessage(instance *whatsapp.Instance, jid whatsapp.JID, videoURL *dataurl.DataURL, mimetype string) (whatsapp.MessageResponse, error)
 }
 
 func NewWhatsAppService(
@@ -344,4 +345,13 @@ func (w *whatsAppService) handleMessage(instanceId string, evt *events.Message) 
 	if err != nil {
 		logger.Error("Failed to send webhook request. ", err)
 	}
+}
+
+func (w *whatsAppService) SendVideoMessage(
+	instance *whatsapp.Instance,
+	jid whatsapp.JID,
+	videoURL *dataurl.DataURL,
+	mimetype string,
+) (whatsapp.MessageResponse, error) {
+	return w.whatsApp.SendVideoMessage(instance, jid, videoURL, mimetype)
 }
