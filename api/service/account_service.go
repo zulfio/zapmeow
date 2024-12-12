@@ -14,6 +14,7 @@ type AccountService interface {
 	GetAccountByInstanceID(instanceID string) (*model.Account, error)
 	UpdateAccount(instanceID string, data map[string]interface{}) error
 	DeleteAccountMessages(instanceID string) error
+	GetAllAccounts() ([]model.Account, error)  // New method
 }
 
 type accountService struct {
@@ -42,6 +43,10 @@ func (a *accountService) GetAccountByInstanceID(instanceID string) (*model.Accou
 
 func (a *accountService) UpdateAccount(instanceID string, data map[string]interface{}) error {
 	return a.accountRepo.UpdateAccount(instanceID, data)
+}
+
+func (a *accountService) GetAllAccounts() ([]model.Account, error) {
+	return a.accountRepo.GetAllAccounts()
 }
 
 func (a *accountService) DeleteAccountMessages(instanceID string) error {

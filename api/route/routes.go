@@ -25,6 +25,10 @@ func SetupRouter(
 	accountService service.AccountService,
 ) *gin.Engine {
 	router := makeEngine(app.Config)
+	
+	getInstancesHandler := handler.NewGetInstancesHandler(
+		accountService,
+	)
 
 	getQrCodeHandler := handler.NewGetQrCodeHandler(
 		app,
@@ -86,6 +90,7 @@ func SetupRouter(
 	group.POST("/:instanceId/chat/send/audio", sendAudioMessageHandler.Handler)
 	group.POST("/:instanceId/chat/send/document", sendDocumentMessageHandler.Handler)
 	group.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	group.GET("/instances", getInstancesHandler.Handler)
 
 	return router
 }

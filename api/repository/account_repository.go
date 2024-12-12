@@ -12,6 +12,7 @@ type AccountRepository interface {
 	GetConnectedAccounts() ([]model.Account, error)
 	GetAccountByInstanceID(instanceID string) (*model.Account, error)
 	UpdateAccount(instanceID string, data map[string]interface{}) error
+	GetAllAccounts() ([]model.Account, error)
 }
 
 type accountRepository struct {
@@ -55,4 +56,12 @@ func (repo *accountRepository) UpdateAccount(instanceID string, data map[string]
 	}
 
 	return nil
+}
+
+func (repo *accountRepository) GetAllAccounts() ([]model.Account, error) {
+	var accounts []model.Account
+	if result := repo.database.Client().Find(&accounts); result.Error != nil {
+		return nil, result.Error
+	}
+	return accounts, nil
 }
