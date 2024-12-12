@@ -11,6 +11,7 @@ import (
 
 type getQrCodeResponse struct {
 	QrCode string `json:"qrcode"`
+	Status string `json:"status"`
 }
 
 type getQrCodeHandler struct {
@@ -60,11 +61,19 @@ func (h *getQrCodeHandler) Handler(c *gin.Context) {
 	}
 
 	if account == nil {
-		response.ErrorResponse(c, http.StatusInternalServerError, "Account not foun")
+		response.ErrorResponse(c, http.StatusInternalServerError, "Account not found")
 		return
+	}
+
+	var responseStatus string
+	if account.Status == "CONNECTED" {
+		responseStatus = "CONNECTED"
+	} else {
+		responseStatus = "SCAN_QR_CODE"
 	}
 
 	response.Response(c, http.StatusOK, getQrCodeResponse{
 		QrCode: account.QrCode,
+		Status: responseStatus,
 	})
 }
