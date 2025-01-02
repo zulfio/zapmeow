@@ -19,6 +19,20 @@ definitions:
           $ref: '#/definitions/whatsapp.IsOnWhatsAppResponse'
         type: array
     type: object
+  handler.getContactsResponse:
+    properties:
+      contacts:
+        items:
+          $ref: '#/definitions/whatsapp.ContactInfo'
+        type: array
+    type: object
+  handler.getInstancesResponse:
+    properties:
+      instances:
+        items:
+          $ref: '#/definitions/handler.instanceResponse'
+        type: array
+    type: object
   handler.getMessagesBody:
     properties:
       phone:
@@ -38,11 +52,24 @@ definitions:
     type: object
   handler.getQrCodeResponse:
     properties:
+      info:
+        allOf:
+        - $ref: '#/definitions/whatsapp.ContactInfo'
+        description: Add this field
       qrcode:
+        type: string
+      status:
         type: string
     type: object
   handler.getStatusResponse:
     properties:
+      status:
+        type: string
+    type: object
+  handler.instanceResponse:
+    properties:
+      id:
+        type: string
       status:
         type: string
     type: object
@@ -54,6 +81,20 @@ definitions:
         type: string
     type: object
   handler.sendAudioMessageResponse:
+    properties:
+      message:
+        $ref: '#/definitions/response.Message'
+    type: object
+  handler.sendDocumentMessageBody:
+    properties:
+      base64:
+        type: string
+      filename:
+        type: string
+      phone:
+        type: string
+    type: object
+  handler.sendDocumentMessageResponse:
     properties:
       message:
         $ref: '#/definitions/response.Message'
@@ -81,6 +122,25 @@ definitions:
     properties:
       message:
         $ref: '#/definitions/response.Message'
+    type: object
+  handler.sendVideoMessageBody:
+    properties:
+      base64:
+        type: string
+      phone:
+        type: string
+    type: object
+  handler.sendVideoMessageResponse:
+    properties:
+      message:
+        $ref: '#/definitions/response.Message'
+    type: object
+  response.Error:
+    properties:
+      code:
+        type: integer
+      error:
+        type: string
     type: object
   response.Message:
     properties:
@@ -186,6 +246,33 @@ paths:
       summary: Send Audio Message on WhatsApp
       tags:
       - WhatsApp Chat
+  /{instanceId}/chat/send/document:
+    post:
+      consumes:
+      - application/json
+      description: Sends an Document message on WhatsApp using the specified instance.
+      parameters:
+      - description: Instance ID
+        in: path
+        name: instanceId
+        required: true
+        type: string
+      - description: Document message body
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handler.sendDocumentMessageBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message Send Response
+          schema:
+            $ref: '#/definitions/handler.sendDocumentMessageResponse'
+      summary: Send Document Message on WhatsApp
+      tags:
+      - WhatsApp Chat
   /{instanceId}/chat/send/image:
     post:
       consumes:
@@ -238,6 +325,33 @@ paths:
           schema:
             $ref: '#/definitions/handler.sendTextMessageResponse'
       summary: Send Text Message on WhatsApp
+      tags:
+      - WhatsApp Chat
+  /{instanceId}/chat/send/video:
+    post:
+      consumes:
+      - application/json
+      description: Sends a video message on WhatsApp using the specified instance.
+      parameters:
+      - description: Instance ID
+        in: path
+        name: instanceId
+        required: true
+        type: string
+      - description: Video message body
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handler.sendVideoMessageBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message Send Response
+          schema:
+            $ref: '#/definitions/handler.sendVideoMessageResponse'
+      summary: Send Video Message on WhatsApp
       tags:
       - WhatsApp Chat
   /{instanceId}/check/phones:
@@ -294,6 +408,35 @@ paths:
       summary: Get Contact Information
       tags:
       - WhatsApp Contact
+  /{instanceId}/contacts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all contacts for the specified WhatsApp instance.
+      parameters:
+      - description: Instance ID
+        in: path
+        name: instanceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of contacts
+          schema:
+            $ref: '#/definitions/handler.getContactsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Get WhatsApp Contacts
+      tags:
+      - WhatsApp Contacts
   /{instanceId}/logout:
     post:
       consumes:
@@ -350,7 +493,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: QR Code
+          description: QR Code and Profile Info
           schema:
             $ref: '#/definitions/handler.getQrCodeResponse'
       summary: Get WhatsApp QR Code
@@ -377,4 +520,19 @@ paths:
       summary: Get WhatsApp Instance Status
       tags:
       - WhatsApp Status
+  /instances:
+    get:
+      consumes:
+      - application/json
+      description: Returns all WhatsApp instances.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of instances
+          schema:
+            $ref: '#/definitions/handler.getInstancesResponse'
+      summary: Get WhatsApp Instances
+      tags:
+      - WhatsApp Instance
 swagger: "2.0"

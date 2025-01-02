@@ -15,6 +15,29 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/instances": {
+            "get": {
+                "description": "Returns all WhatsApp instances.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WhatsApp Instance"
+                ],
+                "summary": "Get WhatsApp Instances",
+                "responses": {
+                    "200": {
+                        "description": "List of instances",
+                        "schema": {
+                            "$ref": "#/definitions/handler.getInstancesResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/{instanceId}/chat/messages": {
             "post": {
                 "description": "Returns chat messages from the specified WhatsApp instance.",
@@ -92,6 +115,47 @@ const docTemplate = `{
                         "description": "Message Send Response",
                         "schema": {
                             "$ref": "#/definitions/handler.sendAudioMessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/{instanceId}/chat/send/document": {
+            "post": {
+                "description": "Sends an Document message on WhatsApp using the specified instance.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WhatsApp Chat"
+                ],
+                "summary": "Send Document Message on WhatsApp",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Instance ID",
+                        "name": "instanceId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Document message body",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.sendDocumentMessageBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message Send Response",
+                        "schema": {
+                            "$ref": "#/definitions/handler.sendDocumentMessageResponse"
                         }
                     }
                 }
@@ -179,6 +243,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/{instanceId}/chat/send/video": {
+            "post": {
+                "description": "Sends a video message on WhatsApp using the specified instance.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WhatsApp Chat"
+                ],
+                "summary": "Send Video Message on WhatsApp",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Instance ID",
+                        "name": "instanceId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Video message body",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.sendVideoMessageBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message Send Response",
+                        "schema": {
+                            "$ref": "#/definitions/handler.sendVideoMessageResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/{instanceId}/check/phones": {
             "post": {
                 "description": "Verifies if the phone numbers in the provided list are registered WhatsApp users.",
@@ -254,6 +359,50 @@ const docTemplate = `{
                         "description": "Contact Information",
                         "schema": {
                             "$ref": "#/definitions/handler.contactInfoResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/{instanceId}/contacts": {
+            "get": {
+                "description": "Retrieves all contacts for the specified WhatsApp instance.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WhatsApp Contacts"
+                ],
+                "summary": "Get WhatsApp Contacts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Instance ID",
+                        "name": "instanceId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of contacts",
+                        "schema": {
+                            "$ref": "#/definitions/handler.getContactsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
                         }
                     }
                 }
@@ -345,7 +494,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "QR Code",
+                        "description": "QR Code and Profile Info",
                         "schema": {
                             "$ref": "#/definitions/handler.getQrCodeResponse"
                         }
@@ -417,6 +566,28 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.getContactsResponse": {
+            "type": "object",
+            "properties": {
+                "contacts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/whatsapp.ContactInfo"
+                    }
+                }
+            }
+        },
+        "handler.getInstancesResponse": {
+            "type": "object",
+            "properties": {
+                "instances": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.instanceResponse"
+                    }
+                }
+            }
+        },
         "handler.getMessagesBody": {
             "type": "object",
             "properties": {
@@ -447,7 +618,18 @@ const docTemplate = `{
         "handler.getQrCodeResponse": {
             "type": "object",
             "properties": {
+                "info": {
+                    "description": "Add this field",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/whatsapp.ContactInfo"
+                        }
+                    ]
+                },
                 "qrcode": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }
@@ -455,6 +637,17 @@ const docTemplate = `{
         "handler.getStatusResponse": {
             "type": "object",
             "properties": {
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.instanceResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
                 "status": {
                     "type": "string"
                 }
@@ -472,6 +665,28 @@ const docTemplate = `{
             }
         },
         "handler.sendAudioMessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "$ref": "#/definitions/response.Message"
+                }
+            }
+        },
+        "handler.sendDocumentMessageBody": {
+            "type": "object",
+            "properties": {
+                "base64": {
+                    "type": "string"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.sendDocumentMessageResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -514,6 +729,36 @@ const docTemplate = `{
             "properties": {
                 "message": {
                     "$ref": "#/definitions/response.Message"
+                }
+            }
+        },
+        "handler.sendVideoMessageBody": {
+            "type": "object",
+            "properties": {
+                "base64": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.sendVideoMessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "$ref": "#/definitions/response.Message"
+                }
+            }
+        },
+        "response.Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "error": {
+                    "type": "string"
                 }
             }
         },

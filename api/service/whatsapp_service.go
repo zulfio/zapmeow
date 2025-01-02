@@ -35,6 +35,7 @@ type WhatsAppService interface {
 	ParseEventMessage(instance *whatsapp.Instance, message *events.Message) (whatsapp.Message, error)
 	IsOnWhatsApp(instance *whatsapp.Instance, phones []string) ([]whatsapp.IsOnWhatsAppResponse, error)
 	SendVideoMessage(instance *whatsapp.Instance, jid whatsapp.JID, videoURL *dataurl.DataURL, mimetype string) (whatsapp.MessageResponse, error)
+	GetContacts(instance *whatsapp.Instance) ([]whatsapp.ContactInfo, error)
 }
 
 func NewWhatsAppService(
@@ -354,4 +355,25 @@ func (w *whatsAppService) SendVideoMessage(
 	mimetype string,
 ) (whatsapp.MessageResponse, error) {
 	return w.whatsApp.SendVideoMessage(instance, jid, videoURL, mimetype)
+}
+
+func (w *whatsAppService) GetContacts(instance *whatsapp.Instance) ([]whatsapp.ContactInfo, error) {
+    contacts, err := instance.Client.Store.Contacts.GetAllContacts()
+    if err != nil {
+        return nil, err
+    }
+
+    var contactInfos []whatsapp.ContactInfo
+
+    for jid := range contacts {
+        info, err := w.GetContactInfo(instance, jid)
+        if err != nil {
+            // Log the error but continue with other contacts
+            logger.Error("Error getting contact info: ", err)
+            continue
+        }
+        contactInfos = append(contactInfos, *info)
+    }
+
+    return contactInfos, nil
 }

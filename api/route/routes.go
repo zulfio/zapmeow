@@ -79,6 +79,9 @@ func SetupRouter(
 		whatsAppService,
 		messageService,
 	)
+	getContactsHandler := handler.NewGetContactsHandler(
+		whatsAppService,
+	)
 
 	group := router.Group("/api")
 
@@ -96,6 +99,7 @@ func SetupRouter(
 	group.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	group.GET("/instances", getInstancesHandler.Handler)
 	group.POST("/:instanceId/chat/send/video", sendVideoMessageHandler.Handler)
-
+	group.GET("/:instanceId/contacts", getContactsHandler.Handler)
+	
 	return router
 }
