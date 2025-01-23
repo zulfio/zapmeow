@@ -170,9 +170,6 @@ func (w *whatsAppService) IsAuthenticated(instance *whatsapp.Instance) bool {
 
 func (w *whatsAppService) Logout(instance *whatsapp.Instance) error {
 	err := w.whatsApp.Logout(instance)
-	if err != nil {
-		return err
-	}
 
 	err = w.accountService.UpdateAccount(instance.ID, map[string]interface{}{
 		"Status": "UNPAIRED",
