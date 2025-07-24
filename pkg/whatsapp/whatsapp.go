@@ -135,7 +135,7 @@ func NewWhatsApp(databasePath string) *whatsApp {
 	}
 	dbLog := waLog.Stdout("Database", level, true)
 
-	container, err := sqlstore.New("sqlite3", "file:"+databasePath+"?_foreign_keys=on", dbLog)
+	container, err := sqlstore.New(context.Background(), "sqlite3", "file:"+databasePath+"?_foreign_keys=on", dbLog)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -152,7 +152,7 @@ func (w *whatsApp) CreateInstance(id string) *Instance {
 }
 
 func (w *whatsApp) CreateInstanceFromDevice(id string, jid JID) *Instance {
-	device, _ := w.container.GetDevice(JID{
+	device, _ := w.container.GetDevice(context.Background(), JID{
 		User:       jid.User,
 		RawAgent:   jid.RawAgent,
 		Device:     jid.Device,
@@ -187,7 +187,7 @@ func (w *whatsApp) Connect(instance *Instance) {
 }
 
 func (w *whatsApp) Logout(instance *Instance) error {
-	return instance.Client.Logout()
+	return instance.Client.Logout(context.Background())
 }
 
 func (w *whatsApp) EventHandler(instance *Instance, handler func(evt interface{})) {
@@ -317,7 +317,7 @@ func (w *whatsApp) GetContactInfo(instance *Instance, jid JID) (*ContactInfo, er
 		return nil, err
 	}
 
-	contactInfo, err := instance.Client.Store.Contacts.GetContact(jid)
+	contactInfo, err := instance.Client.Store.Contacts.GetContact(context.Background(), jid)
 	if err != nil {
 		return nil, err
 	}
@@ -414,7 +414,7 @@ func (w *whatsApp) uploadMedia(instance *Instance, media *dataurl.DataURL, media
 func (w *whatsApp) downloadMedia(instance *Instance, message *waProto.Message) (*DownloadResponse, error) {
 	document := message.GetDocumentMessage()
 	if document != nil {
-		data, err := instance.Client.Download(document)
+		data, err := instance.Client.Download(context.Background(), document)
 		if err != nil {
 			return &DownloadResponse{Type: Document}, err
 		}
@@ -428,7 +428,7 @@ func (w *whatsApp) downloadMedia(instance *Instance, message *waProto.Message) (
 
 	audio := message.GetAudioMessage()
 	if audio != nil {
-		data, err := instance.Client.Download(audio)
+		data, err := instance.Client.Download(context.Background(), audio)
 		if err != nil {
 			return &DownloadResponse{Type: Audio}, err
 		}
@@ -442,7 +442,7 @@ func (w *whatsApp) downloadMedia(instance *Instance, message *waProto.Message) (
 
 	image := message.GetImageMessage()
 	if image != nil {
-		data, err := instance.Client.Download(image)
+		data, err := instance.Client.Download(context.Background(), image)
 		if err != nil {
 			return &DownloadResponse{Type: Image}, err
 		}
@@ -456,7 +456,7 @@ func (w *whatsApp) downloadMedia(instance *Instance, message *waProto.Message) (
 
 	sticker := message.GetStickerMessage()
 	if sticker != nil {
-		data, err := instance.Client.Download(sticker)
+		data, err := instance.Client.Download(context.Background(), sticker)
 		if err != nil {
 			return &DownloadResponse{Type: Sticker}, err
 		}

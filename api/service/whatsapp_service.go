@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"zapmeow/api/helper"
 	"zapmeow/api/model"
 	"zapmeow/api/queue"
@@ -355,7 +356,7 @@ func (w *whatsAppService) SendVideoMessage(
 }
 
 func (w *whatsAppService) GetContacts(instance *whatsapp.Instance) ([]whatsapp.ContactInfo, error) {
-    contacts, err := instance.Client.Store.Contacts.GetAllContacts()
+    contacts, err := instance.Client.Store.Contacts.GetAllContacts(context.Background())
     if err != nil {
         return nil, err
     }
